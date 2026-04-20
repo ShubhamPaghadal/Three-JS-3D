@@ -1,0 +1,9 @@
+@echo off
+echo Stopping any existing dev server...
+taskkill /F /IM node.exe >nul 2>&1
+echo Installing 3D Real Estate Platform dependencies...
+call npm install
+echo.
+echo Installation complete! Starting the project...
+call npm run dev
+pause
