@@ -12,7 +12,14 @@ interface PlotProps {
 
 export const Plot = ({ data }: PlotProps) => {
   const meshRef = useRef<THREE.Mesh>(null);
-  const { selectedPlotId, selectPlot, hoveredPlotId, setHoveredPlot, isStatusVisible } = useSceneStore();
+  const { 
+    selectedPlotId, 
+    selectPlot, 
+    hoveredPlotId, 
+    setHoveredPlot, 
+    isStatusVisible,
+    viewMode
+  } = useSceneStore();
 
   const isSelected = selectedPlotId === data.id;
   const isHovered = hoveredPlotId === data.id;
@@ -20,15 +27,16 @@ export const Plot = ({ data }: PlotProps) => {
   useCursor(isHovered);
 
   const getStatusColor = () => {
-    if (data.number.includes('COMMON')) return '#84cc16'; // Always green for common plots
-    if (isSelected) return '#3b82f6'; // Solace Selection Blue
-    if (!isStatusVisible) return '#fcfaf2'; // Beige Blank Plate as per reference image
+    if (viewMode === 'map') return '#00f2ff'; // Cyan Overlay for Map View
+    if (data.number.includes('COMMON')) return '#84cc16'; 
+    if (isSelected) return '#3b82f6';
+    if (!isStatusVisible) return '#fcfaf2';
 
     switch (data.status) {
-      case 'available': return '#84cc16'; // Green
-      case 'booked': return '#ef4444';    // Red
-      case 'on-hold': return '#f59e0b';   // Orange/Yellow
-      case 'no-info': return '#94a3b8';   // Grey
+      case 'available': return '#84cc16';
+      case 'booked': return '#ef4444';
+      case 'on-hold': return '#f59e0b';
+      case 'no-info': return '#94a3b8';
       default: return '#fcfaf2';
     }
   };
@@ -52,9 +60,9 @@ export const Plot = ({ data }: PlotProps) => {
         <meshStandardMaterial
           color={getStatusColor()}
           transparent
-          opacity={isSelected ? 1 : 0.95}
-          emissive={isSelected ? '#3b82f6' : '#000000'}
-          emissiveIntensity={isSelected ? 0.3 : 0}
+          opacity={viewMode === 'map' ? (isSelected ? 0.7 : 0.3) : (isSelected ? 1 : 0.95)}
+          emissive={isSelected ? (viewMode === 'map' ? '#00f2ff' : '#3b82f6') : '#000000'}
+          emissiveIntensity={isSelected ? 0.5 : 0}
           polygonOffset
           polygonOffsetFactor={1}
           polygonOffsetUnits={1}
@@ -83,7 +91,7 @@ export const Plot = ({ data }: PlotProps) => {
         position={[0, 0.1, 0]}
         rotation={[-Math.PI / 2, 0, 0]}
         fontSize={0.25}
-        color="#374151"
+        color={viewMode === 'map' ? "white" : "#374151"}
         anchorX="center"
         anchorY="middle"
         maxWidth={1}
