@@ -16,6 +16,7 @@ import { MOCK_PLOTS } from '../../data/mockData';
 
 export const Experience = () => {
   const { viewMode } = useSceneStore();
+
   return (
     <>
       <PerspectiveCamera makeDefault position={[0, 30, 30]} fov={35} />
@@ -24,13 +25,17 @@ export const Experience = () => {
         dampingFactor={0.05}
         maxPolarAngle={Math.PI / 2.2}
         minDistance={10}
-        maxDistance={60}
+        maxDistance={80}
         makeDefault
       />
 
       <CameraHandler />
 
-      <color attach="background" args={[viewMode === 'map' ? '#1f2937' : '#1a1a1a']} />
+      {viewMode !== 'map' && (
+        <color attach="background" args={['#1a1a1a']} />
+      )}
+      
+      {/* Set alpha to 0 for map view in Canvas if needed, handled in app/page.tsx */}
 
       <ambientLight intensity={viewMode === 'map' ? 1.5 : 1} />
       <directionalLight
@@ -39,24 +44,10 @@ export const Experience = () => {
         castShadow
       />
 
-      {/* Infrastructure */}
-      <Roads visible={viewMode !== 'map'} />
-      <CentralGreen visible={viewMode !== 'map'} />
+      {/* Infrastructure - Hidden in map mode for cleaner look */}
+      <Roads visible={viewMode === '3d' || viewMode === '2d'} />
+      <CentralGreen visible={viewMode === '3d' || viewMode === '2d'} />
       
-      {/* Map View Satellite Image */}
-      {viewMode === 'map' && (
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.2, 0]}>
-          <planeGeometry args={[100, 100]} />
-          <meshStandardMaterial 
-            color="#555"
-            roughness={0.8}
-            metalness={0.1}
-          />
-          {/* In a production environment, you would use useTexture from @react-three/drei */}
-          {/* to load a real satellite tile here */}
-        </mesh>
-      )}
-
       {/* Plots */}
       <group>
         {MOCK_PLOTS.map((plot) => (
@@ -67,8 +58,8 @@ export const Experience = () => {
       {/* Decoration */}
       {viewMode !== 'map' && (
         <>
-          <Tree position={[-6, 0, -12]} />
-          <Tree position={[6, 0, -12]} />
+          <Tree position={[-5, 0, -4]} />
+          <Tree position={[7, 0, -1]} />
           <Tree position={[-6, 0, -8]} />
           <Tree position={[6, 0, -8]} />
         </>
