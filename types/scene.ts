@@ -11,6 +11,7 @@ export interface PlotData {
   points: [number, number][]; // Boundary points for custom shapes
 }
 
+
 export interface SceneState {
   viewMode: ViewMode;
   selectedPlotId: string | null;
