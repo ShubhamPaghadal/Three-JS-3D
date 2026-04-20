@@ -13,6 +13,7 @@ export const useSceneStore = create<SceneState>((set) => ({
   
   isStatusVisible: false,
   searchQuery: '',
+  isGalleryOpen: false,
 
   setView: (view: 'plot' | 'world') => set({ view }),
   setViewMode: (mode: ViewMode) => set({ viewMode: mode }),
@@ -25,4 +26,5 @@ export const useSceneStore = create<SceneState>((set) => ({
 
   toggleStatus: () => set((state) => ({ isStatusVisible: !state.isStatusVisible })),
   setSearchQuery: (query: string) => set({ searchQuery: query }),
+  setGalleryOpen: (isOpen: boolean) => set({ isGalleryOpen: isOpen }),
 }));

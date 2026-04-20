@@ -45,6 +45,7 @@ export interface SceneState {
   
   isStatusVisible: boolean;
   searchQuery: string;
+  isGalleryOpen: boolean;
   
   // Actions
   setView: (view: 'plot' | 'world') => void;
@@ -58,4 +59,5 @@ export interface SceneState {
   
   toggleStatus: () => void;
   setSearchQuery: (query: string) => void;
+  setGalleryOpen: (isOpen: boolean) => void;
 }

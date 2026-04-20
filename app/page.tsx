@@ -3,6 +3,7 @@
 import { Canvas } from '@react-three/fiber';
 import { Experience } from '../components/3d/Experience';
 import { Overlay } from '../components/ui/Overlay';
+import { Gallery } from '../components/ui/Gallery';
 import { Suspense, useEffect, useState } from 'react';
 import { Loader } from '@react-three/drei';
 import { Leva } from 'leva';
@@ -32,6 +33,7 @@ export default function Home() {
 
       {/* UI Layers */}
       <Overlay />
+      <Gallery />
 
       {/* Fallback Loader */}
       <Loader 

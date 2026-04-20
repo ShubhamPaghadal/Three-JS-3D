@@ -13,17 +13,17 @@ interface PlotProps {
 export const Plot = ({ data }: PlotProps) => {
   const meshRef = useRef<THREE.Mesh>(null);
   const { selectedPlotId, selectPlot, hoveredPlotId, setHoveredPlot, isStatusVisible } = useSceneStore();
-  
+
   const isSelected = selectedPlotId === data.id;
   const isHovered = hoveredPlotId === data.id;
-  
+
   useCursor(isHovered);
 
   const getStatusColor = () => {
     if (data.number.includes('COMMON')) return '#84cc16'; // Always green for common plots
     if (isSelected) return '#3b82f6'; // Solace Selection Blue
     if (!isStatusVisible) return '#fcfaf2'; // Beige Blank Plate as per reference image
-    
+
     switch (data.status) {
       case 'available': return '#84cc16'; // Green
       case 'booked': return '#ef4444';    // Red
@@ -49,27 +49,30 @@ export const Plot = ({ data }: PlotProps) => {
         }}
       >
         <planeGeometry args={[1.3, 2]} />
-        <meshStandardMaterial 
-          color={getStatusColor()} 
-          transparent 
+        <meshStandardMaterial
+          color={getStatusColor()}
+          transparent
           opacity={isSelected ? 1 : 0.95}
           emissive={isSelected ? '#3b82f6' : '#000000'}
           emissiveIntensity={isSelected ? 0.3 : 0}
+          polygonOffset
+          polygonOffsetFactor={1}
+          polygonOffsetUnits={1}
         />
-        
+
         {/* Subtle Border for all plots */}
-        <Edges 
-          threshold={15} 
-          color="#333333" 
+        <Edges
+          threshold={15}
+          color="#333333"
           opacity={0.3}
           transparent
         />
 
         {/* Selection Outline - White Dashed style */}
         {isSelected && (
-          <Edges 
-            threshold={15} 
-            color="white" 
+          <Edges
+            threshold={15}
+            color="white"
             scale={1.05}
           />
         )}

@@ -13,6 +13,10 @@ import {
   Maximize2
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { MOCK_PLOTS } from '../../data/mockData';
+
+import { useState, useEffect } from 'react';
+import { AlertCircle } from 'lucide-react';
 
 export const Overlay = () => {
   const {
@@ -23,12 +27,59 @@ export const Overlay = () => {
     selectedPlotId,
     selectPlot,
     searchQuery,
-    setSearchQuery
+    setSearchQuery,
+    setGalleryOpen
   } = useSceneStore();
 
+  const [toast, setToast] = useState<string | null>(null);
+  const [isInvalid, setIsInvalid] = useState(false);
+
+  // Clear states when query changes
+  useEffect(() => {
+    if (isInvalid) setIsInvalid(false);
+  }, [searchQuery]);
+
+  const showToast = (message: string) => {
+    setToast(message);
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const validateAndSearch = (query: string) => {
+    const trimmed = query.trim();
+    if (!trimmed) return;
+
+    // Check for invalid characters (only allow "Plot", numbers, and spaces)
+    const isValidFormat = /^(plot\s*)?\d+$/i.test(trimmed);
+    
+    if (!isValidFormat) {
+      setIsInvalid(true);
+      showToast("Please enter a valid plot number");
+      return;
+    }
+
+    // Extract the number
+    const plotNum = trimmed.replace(/plot\s*/i, '');
+    const foundPlot = MOCK_PLOTS.find(p => p.number === plotNum);
+
+    if (!foundPlot) {
+      setIsInvalid(true);
+      showToast(`Plot ${plotNum} is not found`);
+      return;
+    }
+
+    // Success
+    setIsInvalid(false);
+    selectPlot(foundPlot.id);
+  };
+
+  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      validateAndSearch(searchQuery);
+    }
+  };
+
   const handleLocate = () => {
-    // Simulate locate by selecting a specific plot
-    selectPlot('p1');
+    validateAndSearch(searchQuery);
   };
 
   return (
@@ -84,31 +135,48 @@ export const Overlay = () => {
           </div>
         )}
 
-        {/* Bottom Center: Search & Actions */}
-        <div className="flex flex-col items-center gap-4 flex-1">
-          <div className="pointer-events-auto flex items-center gap-2 bg-zinc-900 p-2 rounded-full shadow-2xl border border-white/10">
-            <div className="flex items-center gap-3 px-4 h-10 border-r border-white/10">
-              <Search size={18} className="text-zinc-500" />
+      {/* Right Side Toast Notification */}
+      {toast && (
+        <div className="absolute top-24 right-8 z-50 animate-in slide-in-from-right-8 duration-500">
+          <div className="bg-red-500/90 backdrop-blur-md px-6 py-3 rounded-full shadow-2xl border border-red-400/50 flex items-center gap-3">
+            <AlertCircle size={18} className="text-white" />
+            <span className="text-sm font-bold text-white tracking-wide">{toast}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Bottom Center: Search & Actions */}
+      <div className="flex flex-col items-center gap-4 flex-1">
+        <div className={clsx(
+          "pointer-events-auto flex items-center gap-2 bg-zinc-900 p-2 rounded-full shadow-2xl border transition-all duration-300",
+          isInvalid ? "border-red-500 shadow-red-500/20" : "border-white/10"
+        )}>
+          <div className="flex items-center gap-3 px-4 h-10 border-r border-white/10">
+            <Search size={18} className={clsx("transition-colors", isInvalid ? "text-red-500" : "text-zinc-500")} />
               <input
                 type="text"
                 placeholder="Find a plot..."
                 className="bg-transparent border-none outline-none text-white text-sm font-medium w-32 placeholder:text-zinc-600"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleSearch}
               />
             </div>
             <div className="flex items-center gap-1 px-1">
-              <button className="flex items-center gap-2 px-4 py-2 text-zinc-400 hover:text-white transition-colors">
+              <button
+                onClick={() => setGalleryOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+              >
                 <ImageIcon size={18} />
                 <span className="text-[10px] font-bold uppercase tracking-widest">Gallery</span>
               </button>
-              <button className="flex items-center gap-2 px-4 py-2 text-zinc-400 hover:text-white transition-colors">
+              <button className="flex items-center gap-2 px-4 py-2 text-zinc-400 hover:text-white transition-colors cursor-pointer">
                 <Info size={18} />
                 <span className="text-[10px] font-bold uppercase tracking-widest">Info</span>
               </button>
               <button
                 onClick={handleLocate}
-                className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-all active:scale-95 shadow-lg shadow-blue-500/20"
+                className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-all active:scale-95 shadow-lg shadow-blue-500/20 cursor-pointer"
               >
                 <Compass size={18} />
                 <span className="text-[10px] font-bold uppercase tracking-widest">Locate</span>
@@ -123,7 +191,7 @@ export const Overlay = () => {
             <button
               onClick={() => setViewMode('map')}
               className={clsx(
-                "flex items-center gap-2 px-4 py-2 rounded-full transition-all text-[10px] font-black uppercase tracking-widest",
+                "flex items-center gap-2 px-4 py-2 rounded-full transition-all text-[10px] font-black uppercase tracking-widest cursor-pointer",
                 viewMode === 'map' ? "bg-white text-zinc-900 shadow-lg" : "text-white/60 hover:text-white"
               )}
             >
@@ -133,7 +201,7 @@ export const Overlay = () => {
             <button
               onClick={() => setViewMode('2d')}
               className={clsx(
-                "flex items-center gap-2 px-4 py-2 rounded-full transition-all text-[10px] font-black uppercase tracking-widest",
+                "flex items-center gap-2 px-4 py-2 rounded-full transition-all text-[10px] font-black uppercase tracking-widest cursor-pointer",
                 viewMode === '2d' ? "bg-white text-zinc-900 shadow-lg" : "text-white/60 hover:text-white"
               )}
             >
@@ -143,7 +211,7 @@ export const Overlay = () => {
             <button
               onClick={() => setViewMode('3d')}
               className={clsx(
-                "flex items-center gap-2 px-4 py-2 rounded-full transition-all text-[10px] font-black uppercase tracking-widest",
+                "flex items-center gap-2 px-4 py-2 rounded-full transition-all text-[10px] font-black uppercase tracking-widest cursor-pointer",
                 viewMode === '3d' ? "bg-white text-zinc-900 shadow-lg" : "text-white/60 hover:text-white"
               )}
             >
@@ -152,7 +220,7 @@ export const Overlay = () => {
             </button>
           </div>
 
-          <button className="p-4 bg-white/90 backdrop-blur-md rounded-full border border-zinc-200 shadow-xl text-zinc-800 hover:bg-zinc-50 transition-colors">
+          <button className="p-4 bg-white/90 backdrop-blur-md rounded-full border border-zinc-200 shadow-xl text-zinc-800 hover:bg-zinc-50 transition-colors cursor-pointer">
             <Share2 size={20} />
           </button>
 
@@ -162,7 +230,7 @@ export const Overlay = () => {
             <button
               onClick={toggleStatus}
               className={clsx(
-                "relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-300 focus:outline-none",
+                "relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-300 focus:outline-none cursor-pointer",
                 isStatusVisible ? "bg-zinc-500" : "bg-zinc-700"
               )}
             >
